@@ -1,0 +1,47 @@
+name: Monitor de preço
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # a cada 15 minutos (o GitHub pode atrasar alguns minutos)
+  workflow_dispatch:          # permite rodar na mão pelo botão "Run workflow"
+    inputs:
+      teste:
+        description: "Mandar mensagem de teste no Telegram?"
+        type: boolean
+        default: false
+
+jobs:
+  checar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # guarda a memória entre execuções (pra não te avisar repetido)
+      - uses: actions/cache/restore@v4
+        with:
+          path: state.json
+          key: estado-${{ github.run_id }}
+          restore-keys: estado-
+
+      - name: Checar preço
+        run: python monitor.py
+        env:
+          PRODUCT_URL: ${{ secrets.PRODUCT_URL }}
+          MAX_PRICE: ${{ secrets.MAX_PRICE }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TEST_ALERT: ${{ inputs.teste }}
+
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: state.json
+          key: estado-${{ github.run_id }}
