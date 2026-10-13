@@ -2,7 +2,7 @@ name: Monitor de preço
 
 on:
   schedule:
-    - cron: "*/15 * * * *"   # a cada 15 minutos (o GitHub pode atrasar alguns minutos)
+    - cron: "*/5 * * * *"   # a cada 15 minutos (o GitHub pode atrasar alguns minutos)
   workflow_dispatch:          # permite rodar na mão pelo botão "Run workflow"
     inputs:
       teste:
