@@ -1,0 +1,10 @@
+# Lista de produtos para monitorar.
+# Um produto por linha: preço máximo, um espaço, e o link da Amazon.
+# Linhas começando com # são ignoradas (use para anotações).
+#
+# Coloque seus produtos abaixo:
+410 https://www.amazon.com.br/dp/B0HC8JZC1D/ref=cm_sw_r_as_gl_apa_gl_i_608DXT1ESFCCM81PFR5F?linkCode=ml1&tag=clubeoraculo-20&linkId=d4f5b36e7892e86d7efd9a6a8e2e8ac0&ascsubtag=srctok-6dad32b8cade4f0a&btn_type=ss&btn_ref=srctok-6dad32b8cade4f0a
+175 https://www.amazon.com.br/dp/B0HDZQNFKP/?coliid=I2PHI0MG9301FV&colid=279WKHZROGNDH&psc=1&ref_=list_c_wl_lv_ov_lig_dp_it
+210 https://www.amazon.com.br/dp/B0HCCTFQ1B?coliid=I1OUU9BHASYURW&colid=O4OJNS5C7RFQ&psc=1&linkCode=sl2&tag=clubeoraculo-20&linkId=ed108fb52a2f89246947c3ea24a286a8&ref_=as_li_ss_tl&ascsubtag=srctok-6d6687d64cda649c&btn_type=ss&btn_ref=srctok-6d6687d64cda649c
+
+
