@@ -37,13 +37,49 @@ HEADERS = {
     "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
 }
 
+DEBUG_DIR = "debug"
+
+# Lugares onde a Amazon costuma mostrar o preço principal (em ordem de preferência).
+# O layout muda conforme o vendedor, a categoria e a versão do site.
 PRICE_SELECTORS = [
     "#corePrice_feature_div .a-price .a-offscreen",
+    "#corePriceDisplay_desktop_feature_div .priceToPay .a-offscreen",
     "#corePriceDisplay_desktop_feature_div .a-price .a-offscreen",
+    "#corePrice_desktop .a-price .a-offscreen",
+    "#apex_desktop .priceToPay .a-offscreen",
+    "#apex_desktop .apexPriceToPay .a-offscreen",
     "#apex_desktop .a-price .a-offscreen",
+    "#apex_offerDisplay_desktop .a-price .a-offscreen",
+    "#tp_price_block_total_price_ww .a-offscreen",
+    "#buybox .a-price .a-offscreen",
+    "#newAccordionRow .a-price .a-offscreen",
+    "#qualifiedBuybox .a-price .a-offscreen",
     "#price_inside_buybox",
+    "#newBuyBoxPrice",
     "#priceblock_ourprice",
     "#priceblock_dealprice",
+    "#price",
+]
+
+# Mesmos blocos, mas lendo o preço "visual" (parte inteira + centavos separados)
+WHOLE_PRICE_CONTAINERS = [
+    "#corePrice_feature_div",
+    "#corePriceDisplay_desktop_feature_div",
+    "#apex_desktop",
+    "#apex_offerDisplay_desktop",
+    "#buybox",
+]
+
+# Campos escondidos / dados embutidos na página que às vezes trazem o preço
+HIDDEN_PRICE_INPUTS = [
+    "#twister-plus-price-data-price",
+    "#attach-base-product-price",
+    "input[name='displayedPrice']",
+]
+JSON_PRICE_PATTERNS = [
+    r'"priceAmount"\s*:\s*([\d.]+)',
+    r'"displayPrice"\s*:\s*"R\$\s*([\d.,]+)"',
+    r'"buyingPrice"\s*:\s*([\d.]+)',
 ]
 
 
@@ -128,6 +164,61 @@ def fetch(session, url):
     return None
 
 
+def find_price(soup, html):
+    """Tenta vários jeitos de achar o preço. Retorna (preço) ou None."""
+    # 1) texto acessível do preço (o jeito mais comum)
+    for sel in PRICE_SELECTORS:
+        for el in soup.select(sel):
+            # ignora o preço riscado ("De: R$ ...")
+            if el.find_parent(class_=["a-text-price", "basisPrice"]):
+                continue
+            price = parse_price(el.get_text())
+            if price:
+                return price
+
+    # 2) preço "visual": parte inteira e centavos em elementos separados
+    for container in WHOLE_PRICE_CONTAINERS:
+        box = soup.select_one(container)
+        if not box:
+            continue
+        whole = box.select_one(".a-price-whole")
+        if whole:
+            frac = box.select_one(".a-price-fraction")
+            text = whole.get_text(strip=True).rstrip(",") + "," + (frac.get_text(strip=True) if frac else "00")
+            price = parse_price(text)
+            if price:
+                return price
+
+    # 3) campos escondidos
+    for sel in HIDDEN_PRICE_INPUTS:
+        el = soup.select_one(sel)
+        if el and el.get("value"):
+            value = el["value"].strip()
+            try:
+                price = float(value) if re.fullmatch(r"\d+(\.\d+)?", value) else parse_price(value)
+            except ValueError:
+                price = None
+            if price:
+                return price
+
+    # 4) dados embutidos em JSON
+    for pattern in JSON_PRICE_PATTERNS:
+        m = re.search(pattern, html)
+        if m:
+            raw = m.group(1)
+            price = parse_price(raw) if "," in raw else float(raw)
+            if price:
+                return price
+    return None
+
+
+def save_debug_page(key, html):
+    """Guarda a página pra diagnóstico (fica disponível pra baixar no GitHub)."""
+    os.makedirs(DEBUG_DIR, exist_ok=True)
+    with open(os.path.join(DEBUG_DIR, f"{key}.html"), "w", encoding="utf-8") as f:
+        f.write(html)
+
+
 def extract(html):
     soup = BeautifulSoup(html, "html.parser")
 
@@ -139,14 +230,7 @@ def extract(html):
     has_buy_button = bool(soup.select_one("#add-to-cart-button, #buy-now-button"))
     in_stock = has_buy_button and "indisponível" not in avail_text.lower()
 
-    price = None
-    if in_stock:
-        for sel in PRICE_SELECTORS:
-            el = soup.select_one(sel)
-            if el:
-                price = parse_price(el.get_text())
-                if price:
-                    break
+    price = find_price(soup, html) if in_stock else None
 
     seller_el = soup.select_one("#sellerProfileTriggerId, #merchantInfoFeature_feature_div .offer-display-feature-text")
     seller = seller_el.get_text(" ", strip=True) if seller_el else ""
@@ -215,6 +299,21 @@ def check_product(session, product, pstate, token, chat_id):
     elif not is_deal and last_alert is not None:
         # saiu do preço bom: na próxima vez que voltar, avisa de novo
         pstate["alerted_price"] = None
+
+    # Em estoque mas sem preço legível: avisa uma vez pra você conferir na mão
+    if in_stock and price is None:
+        save_debug_page(asin_of(url) or "produto", html)
+        if not pstate.get("unknown_price_alerted"):
+            msg = (
+                f"❓ Produto em estoque, mas não consegui ler o preço.\n\n{info['title'][:120]}\n"
+                + (f"🏪 Vendedor: {info['seller']}\n" if info["seller"] else "")
+                + f"\nConfira na mão (seu limite: {fmt(max_price)}):\n👉 {url}"
+            )
+            if telegram(token, chat_id, msg):
+                pstate["unknown_price_alerted"] = True
+                print("  -> aviso de preço não encontrado enviado")
+    elif not in_stock:
+        pstate["unknown_price_alerted"] = False
 
     pstate["title"] = info["title"][:80]
     pstate["last_status"] = status
