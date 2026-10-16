@@ -47,3 +47,12 @@ jobs:
         with:
           path: state.json
           key: estado-${{ github.run_id }}
+
+      # se algum produto estava em estoque sem preço legível, guarda a página pra diagnóstico
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paginas-para-diagnostico
+          path: debug/
+          if-no-files-found: ignore
+          retention-days: 3
