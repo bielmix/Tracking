@@ -5,6 +5,7 @@
 # Coloque seus produtos abaixo:
 410 https://www.amazon.com.br/dp/B0HC8JZC1D/ref=cm_sw_r_as_gl_apa_gl_i_608DXT1ESFCCM81PFR5F?linkCode=ml1&tag=clubeoraculo-20&linkId=d4f5b36e7892e86d7efd9a6a8e2e8ac0&ascsubtag=srctok-6dad32b8cade4f0a&btn_type=ss&btn_ref=srctok-6dad32b8cade4f0a
 175 https://www.amazon.com.br/dp/B0HDZQNFKP/?coliid=I2PHI0MG9301FV&colid=279WKHZROGNDH&psc=1&ref_=list_c_wl_lv_ov_lig_dp_it
-210 https://www.amazon.com.br/dp/B0HCCTFQ1B?coliid=I1OUU9BHASYURW&colid=O4OJNS5C7RFQ&psc=1&linkCode=sl2&tag=clubeoraculo-20&linkId=ed108fb52a2f89246947c3ea24a286a8&ref_=as_li_ss_tl&ascsubtag=srctok-6d6687d64cda649c&btn_type=ss&btn_ref=srctok-6d6687d64cda649c
+175 https://www.mercadolivre.com.br/pokemon-celebracao-de-30-anos-box-ex-greninja/p/MLB79396707?pdp_filters=seller_id%3A2446240302#polycard_client=search-desktop&float_highlight=last_units&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=19&type=product&tracking_id=818f562f-5255-405f-8978-7840989365f6&overlay_label_capability=not_apply&wid=MLB7845203618&sid=search
+410 https://www.mercadolivre.com.br/pokemon-celebracao-de-30-anos-treinador-avancado/p/MLB79395943?matt_event_ts=1792521591559&matt_d2id=d3b5cd77-d063-4081-baba-89813ee1c484&matt_tracing_id=44564100-eca9-4a90-9225-e3dbadb457d9&offer_type=BEST_INSTALLMENTS
 
 
